@@ -1,26 +1,28 @@
 FROM debian:buster-slim
 
-# Update and install dependencies
+# Atualizar e instalar dependências
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y wget unzip curl gnupg
 
-# Install Android SDK Platform Tools
-RUN wget https://dl.google.com/android/repository/platform-tools-latest-linux.zip && \
-    unzip platform-tools-latest-linux.zip && \
-    mv platform-tools/* /usr/local/share/
+# Configurar o PATH
+ENV PATH="/usr/local/bin:$PATH"
 
-# Update PATH
-ENV PATH="/usr/local/share:$PATH"
+# Definir NVM_DIR e HOME
+ENV NVM_DIR="/root/.nvm"
+ENV HOME="/root"
 
-# Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Criar diretório para NVM
+RUN mkdir -p /usr/local/nvm
 
-# Create adb users group
-RUN groupadd -r adbusers || groupmod -n adbusers adbusers
+RUN curl --silent -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash \
+    && . $NVM_DIR/nvm.sh \
+    && nvm install --lts \
+    && nvm alias default node \
+    && nvm use default
 
-# Add current user to adb users group
-RUN usermod -a -G adbusers $(whoami)
+    RUN . $NVM_DIR/nvm.sh \
+    && npm install -g appium \
+    && appium --version > /tmp/appium_version.txt
 
-EXPOSE 5037
-
-CMD ["sh"]
+    RUN echo "\n(appium version :" $(cat /tmp/appium_version.txt) ")\n"
+    
